@@ -1,0 +1,64 @@
+/* Button when online */
+.ping-button {
+    .ping-button {
+        -fx-pref-width: 112;
+        -fx-pref-height: 112;
+        -fx-min-width: 112;
+        -fx-min-height: 112;
+        -fx-max-width: 112;
+        -fx-max-height: 112;
+        -fx-font-size: 52;
+        -fx-background-radius: 56;
+        -fx-background-color: linear-gradient(to bottom right, #60a5fa, #a855f7);
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);
+        -fx-cursor: hand;
+        -fx-alignment: center;
+        -fx-text-overrun: clip;
+        -fx-padding: 0;
+        -fx-text-fill: white;
+        -fx-border-color: #bfdbfe;
+        -fx-border-width: 2;
+        -fx-border-radius: 56;
+    }
+}
+
+.ping-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6, #9333ea);
+}
+
+.ping-button:pressed {
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+}
+
+.ping-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-background-color: #e5e7eb;
+}
+
+/* Inner border ring */
+.ping-button-border {
+    -fx-border-color: #93c5fd;
+    -fx-border-width: 2;
+    -fx-border-radius: 56;
+}
+
+/* Title Bars */
+.title-bar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 12;
+    -fx-cursor: hand;
+    -fx-padding: 4 8;
+}
+
+.title-bar-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.08);
+    -fx-background-radius: 4;
+}
+
+.close-button:hover {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+}

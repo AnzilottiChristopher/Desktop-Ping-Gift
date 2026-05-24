@@ -1,0 +1,35 @@
+/* Container */
+.status-label {
+    -fx-padding: 24 24 0 0;
+    -fx-alignment: center-right;
+    -fx-spacing: 12;
+}
+
+/* Text */
+.status-text-online {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14;
+    -fx-text-fill: #16a34a;
+}
+
+.status-text-offline {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14;
+    -fx-text-fill: #9ca3af;
+}
+
+/* Dot indicator */
+.status-dot {
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-background-radius: 8;
+}
+
+.status-dot-online {
+    -fx-background-color: #22c55e;
+    -fx-effect: dropshadow(gaussian, rgba(34, 197, 94, 0.6), 8, 0, 0, 0);
+}
+
+.status-dot-offline {
+    -fx-background-color: #d1d5db;
+}
