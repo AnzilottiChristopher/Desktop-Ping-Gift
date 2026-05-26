@@ -1,8 +1,10 @@
 package com.presence;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -10,9 +12,33 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.IOException;
 import java.util.Objects;
 
 public class App extends Application {
+
+    public Result<String> login(Avatar av) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
+            Parent root = loader.load();
+
+            LoginController controller = loader.getController();
+            controller.setAv(av);
+
+            Stage loginStage = new Stage();
+            controller.setOnAuthResult(result -> {
+                if (result.isSuccess())
+                    loginStage.close();
+            });
+
+            loginStage.setScene(new Scene(root));
+            loginStage.showAndWait();
+
+            return controller.getResult();
+        } catch (IOException e) {
+            return Result.fail(e.getMessage());
+        }
+    }
 
     public BorderPane basicSetup(Avatar av, Stage stage) {
         av.setSprite();
@@ -93,17 +119,19 @@ public class App extends Application {
     public void start(Stage stage) {
         stage.initStyle(StageStyle.UNDECORATED);
         Avatar av = new Avatar();
+        Result<String> result = login(av);
 
-        BorderPane startup = basicSetup(av, stage);
-        customTitle(stage, "presence", startup);
+        if (result != null && result.isSuccess()) {
+            BorderPane startup = basicSetup(av, stage);
+            customTitle(stage, "presence", startup);
 
-
-        Scene scene = new Scene(startup, 600, 500);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/button.css")).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/online.css")).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
-        stage.setScene(scene);
-        stage.show();
+            Scene scene = new Scene(startup, 600, 500);
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/button.css")).toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/online.css")).toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
+            stage.setScene(scene);
+            stage.show();
+        }
     }
 
 

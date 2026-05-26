@@ -2,20 +2,23 @@ package com.presence;
 
 import javafx.scene.image.*;
 
+import java.io.IOException;
 import java.util.Objects;
 
 public class Avatar {
     private boolean status;
     private String message;
     private ImageView sprite;
+    private NetworkClient client;
 
     public Avatar() {
         this.status = true;
         this.message = "";
+        this.client = new NetworkClient();
     }
 
-    public void setStatus() {
-        this.status = !this.status;
+    public void setStatus(boolean status) {
+        this.status = status;
     }
     public boolean getStatus() {
         return this.status;
@@ -43,6 +46,23 @@ public class Avatar {
 
     public ImageView getSprite() {
         return this.sprite;
+    }
+
+    public Result<String> login(String email, String password) {
+        try {
+            this.client.login(email, password);
+            return Result.ok("Login Successful");
+        } catch (IOException e) {
+            return Result.fail(e.getMessage());
+        }
+    }
+    public Result<String> register(String email, String password) {
+        try {
+            this.client.register(email, password);
+            return Result.ok("Register Successful");
+        } catch (IOException e) {
+            return Result.fail(e.getMessage());
+        }
     }
 }
 
