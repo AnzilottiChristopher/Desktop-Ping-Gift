@@ -30,7 +30,11 @@ public class NetworkClient {
 
     private String idToken;
     private String userID;
+    private String refreshToken;
 
+    public String getRefreshToken() {
+        return this.refreshToken;
+    }
     public void register(String email, String password) throws IOException {
         String url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + WEB_API_KEY;
         String body = String.format(
@@ -40,6 +44,7 @@ public class NetworkClient {
         JsonObject response = sendPost(url, body);
         this.idToken = response.get("idToken").getAsString();
         this.userID = response.get("localId").getAsString();
+        this.refreshToken = response.get("refreshToken").getAsString();
     }
     public void login(String email, String password) throws IOException {
         String url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + WEB_API_KEY;
@@ -50,6 +55,24 @@ public class NetworkClient {
         JsonObject response = sendPost(url, body);
         this.idToken = response.get("idToken").getAsString();
         this.userID = response.get("localId").getAsString();
+        this.refreshToken = response.get("refreshToken").getAsString();
+    }
+
+    public void loginWithRefreshToken(String refreshToken) throws IOException {
+        String url = "https://securetoken.googleapis.com/v1/token?key=" + WEB_API_KEY;
+        String body = "grant_type=refresh_token&refresh_token=" + refreshToken;
+
+        URL urlObj = new URL(url);
+        HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        conn.setDoOutput(true);
+        conn.getOutputStream().write(body.getBytes());
+
+        String response = new String(conn.getInputStream().readAllBytes());
+        JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+        this.idToken = json.get("id_token").getAsString();
+        this.userID = json.get("user_id").getAsString();
     }
 
     public void sendPing(String msg) throws IOException {

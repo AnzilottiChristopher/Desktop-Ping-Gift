@@ -1,6 +1,7 @@
 package com.presence;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -81,7 +82,7 @@ public class App extends Application {
         return root;
     }
 
-    public void customTitle(Stage stage, String title, BorderPane root) {
+    public void customTitle(Stage stage, String title, BorderPane root, Avatar av, PartnerAvatar pav) {
         stage.setTitle(title);
 
         HBox titleBar =  new HBox();
@@ -111,28 +112,62 @@ public class App extends Application {
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        titleBar.getChildren().addAll(titleName, spacer, minimizeBtn, closeBtn);
+        Button logoutButton = new Button("Logout");
+        logoutButton.getStyleClass().addAll("title-bar-button");
+        logoutButton.setOnAction(event -> {
+            SessionManager.clearSession();
+            av.reset();
+            Result<String> loginResult = login(av);
+            if (loginResult != null && !loginResult.isSuccess()) {
+                NetworkClient client = new NetworkClient();
+                av.setClient(client);
+                av.setStatus(true);
+                showMainScreen(stage, av);
+            } else {
+                Platform.exit();
+            }
+        });
+
+        titleBar.getChildren().addAll(titleName, logoutButton, spacer, minimizeBtn, closeBtn);
         root.setTop(titleBar);
+    }
+
+    private void showMainScreen(Stage stage, Avatar av, PartnerAvatar pav) {
+        BorderPane startup = basicSetup(av, stage);
+        customTitle(stage, "", startup, av, pav);
+
+        Scene scene = new Scene(startup, 600, 500);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/button.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/online.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
+        stage.setScene(scene);
+        stage.show();
     }
 
     @Override
     public void start(Stage stage) {
         stage.initStyle(StageStyle.UNDECORATED);
-        Avatar av = new Avatar();
+        NetworkClient client = new NetworkClient();
+        Avatar av = new Avatar(client);
+        PartnerAvatar pav = new PartnerAvatar(client);
+
+        String refreshToken = SessionManager.loadSession();
+        if (refreshToken != null) {
+            Result<String> result = av.login(refreshToken);
+            if (result != null && result.isSuccess()) {
+                av.setStatus(true);
+                showMainScreen(stage, av, pav);
+                return;
+            }
+        }
+
         Result<String> result = login(av);
-
         if (result != null && result.isSuccess()) {
-            BorderPane startup = basicSetup(av, stage);
-            customTitle(stage, "presence", startup);
-
-            Scene scene = new Scene(startup, 600, 500);
-            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/button.css")).toExternalForm());
-            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/online.css")).toExternalForm());
-            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
-            stage.setScene(scene);
-            stage.show();
+            av.setStatus(true);
+            showMainScreen(stage, av, pav);
         }
     }
+
 
 
     public static void main(String[] args) {

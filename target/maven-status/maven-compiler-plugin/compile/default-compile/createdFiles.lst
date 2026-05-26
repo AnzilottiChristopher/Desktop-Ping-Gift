@@ -1,3 +1,4 @@
 com\presence\Result.class
 com\presence\NetworkClient.class
+com\presence\SessionManager.class
 com\presence\LoginController.class

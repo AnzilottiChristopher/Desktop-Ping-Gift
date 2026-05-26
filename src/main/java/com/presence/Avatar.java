@@ -11,10 +11,10 @@ public class Avatar {
     private ImageView sprite;
     private NetworkClient client;
 
-    public Avatar() {
-        this.status = true;
+    public Avatar(NetworkClient client) {
+        this.status = false;
         this.message = "";
-        this.client = new NetworkClient();
+        this.client = client;
     }
 
     public void setStatus(boolean status) {
@@ -56,6 +56,17 @@ public class Avatar {
             return Result.fail(e.getMessage());
         }
     }
+    public String getRefreshToken() {
+        return this.client.getRefreshToken();
+    }
+    public Result<String> login(String refreshToken) {
+        try {
+            this.client.loginWithRefreshToken(refreshToken);
+            return Result.ok("Login Successful");
+        } catch (IOException e) {
+            return Result.fail(e.getMessage());
+        }
+    }
     public Result<String> register(String email, String password) {
         try {
             this.client.register(email, password);
@@ -63,6 +74,17 @@ public class Avatar {
         } catch (IOException e) {
             return Result.fail(e.getMessage());
         }
+    }
+
+    public void setClient(NetworkClient client) {
+        this.client = client;
+    }
+
+    public void reset() {
+        this.status = false;
+        this.message = "";
+        this.sprite = null;
+        this.client = null;
     }
 }
 

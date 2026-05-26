@@ -55,7 +55,8 @@ public class LoginController {
         this.result = handleAuth(av::login);
         if (!result.isSuccess()) {
             errorLabel.setText("Login failed");
-            System.out.println(this.result.getError());
+        } else {
+            SessionManager.saveSession(av.getRefreshToken());
         }
         onAuthResult.accept(this.result);
     }
@@ -64,7 +65,8 @@ public class LoginController {
         this.result = handleAuth(av::register);
         if (!result.isSuccess()) {
             errorLabel.setText("Register failed");
-            System.out.println(this.result.getError());
+        } else {
+            SessionManager.saveSession(av.getRefreshToken());
         }
         onAuthResult.accept(this.result);
     }
