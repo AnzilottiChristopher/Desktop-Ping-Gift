@@ -35,9 +35,9 @@ public class Avatar {
         System.out.println(this.message);
     }
 
-    public void setSprite() {
+    public void setSprite(String imagePath) {
         try {
-            Image spriteImage = new Image(Objects.requireNonNull(getClass().getResource("/assets/me.png")).toExternalForm());
+            Image spriteImage = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm());
             this.sprite = new ImageView(spriteImage);
         } catch (Exception e) {
             System.err.println("Error loading sprite: " + e.getMessage());

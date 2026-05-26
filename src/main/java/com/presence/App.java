@@ -41,10 +41,20 @@ public class App extends Application {
         }
     }
 
-    public BorderPane basicSetup(Avatar av, Stage stage) {
-        av.setSprite();
+    public BorderPane basicSetup(Avatar av, Stage stage, PartnerAvatar pav) {
+        //TODO Change from hardcoded Sprite
+        av.setSprite("/assets/userC.png");
         av.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         av.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
+
+        //TODO Change from hardcoded Sprite
+        pav.setSprite("/assets/userD.png");
+        pav.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
+        pav.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
+
+        HBox spriteBox = new  HBox(5);
+        spriteBox.getChildren().addAll(av.getSprite(), pav.getSprite());
+        spriteBox.setAlignment(Pos.CENTER);
 
 
         Button button = new Button("♥");
@@ -55,7 +65,7 @@ public class App extends Application {
         });
 
         VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(av.getSprite(), button);
+        vbox.getChildren().addAll(spriteBox, button);
         vbox.setAlignment(Pos.CENTER);
 
         Pane dot = new Pane();
@@ -136,7 +146,7 @@ public class App extends Application {
     }
 
     private void showMainScreen(Stage stage, Avatar av, PartnerAvatar pav) {
-        BorderPane startup = basicSetup(av, stage);
+        BorderPane startup = basicSetup(av, stage, pav);
         customTitle(stage, "", startup, av, pav);
 
         Scene scene = new Scene(startup, 600, 500);
