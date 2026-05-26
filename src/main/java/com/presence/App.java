@@ -42,13 +42,11 @@ public class App extends Application {
     }
 
     public BorderPane basicSetup(Avatar av, Stage stage, PartnerAvatar pav) {
-        //TODO Change from hardcoded Sprite
-        av.setSprite("/assets/userC.png");
+        av.setSprite();
         av.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         av.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
 
-        //TODO Change from hardcoded Sprite
-        pav.setSprite("/assets/userD.png");
+        pav.setSprite();
         pav.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         pav.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
 
@@ -71,22 +69,11 @@ public class App extends Application {
         Pane dot = new Pane();
         dot.getStyleClass().addAll("status-dot", "status-dot-online");
 
-        Label statusText = new Label(av.getStatus() ? "Online" : "Offline");
-        statusText.getStyleClass().add("status-text-online");
-
-        HBox statusBox = new HBox();
-        statusBox.getStyleClass().add("status-label");
-        statusBox.getChildren().addAll(statusText, dot);
 
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox topBar = new HBox();
-        topBar.setPadding(new Insets(10, 20, 0, 0));
-        topBar.getChildren().addAll(spacer, statusBox);
-
         BorderPane root = new BorderPane();
-        root.setTop(topBar);
         root.setCenter(vbox);
 
         return root;
@@ -117,7 +104,10 @@ public class App extends Application {
         closeBtn.getStyleClass().addAll("title-bar-button", "close-button");
 
         minimizeBtn.setOnAction(event -> {stage.setIconified(true);});
-        closeBtn.setOnAction(event -> {stage.close();});
+        closeBtn.setOnAction(event -> {
+            av.setStatus(false);
+            stage.close();
+        });
 
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -127,22 +117,26 @@ public class App extends Application {
         logoutButton.setOnAction(event -> {
             SessionManager.clearSession();
             av.reset();
+            av.setStatus(false);
             pav.reset();
-            Result<String> loginResult = login(av);
-            if (loginResult != null && !loginResult.isSuccess()) {
-                NetworkClient client = new NetworkClient();
-                av.setClient(client);
-                av.setStatus(true);
-                pav.setClient(client);
-                pav.setStatus(true);
-                showMainScreen(stage, av, pav);
-            } else {
-                Platform.exit();
-            }
+            resetClients(stage, av, pav);
         });
 
         titleBar.getChildren().addAll(titleName, logoutButton, spacer, minimizeBtn, closeBtn);
         root.setTop(titleBar);
+    }
+
+    private void resetClients(Stage stage, Avatar av, PartnerAvatar pav) {
+        Result<String> loginResult = login(av);
+        if (loginResult != null && !loginResult.isSuccess()) {
+            NetworkClient client = new NetworkClient();
+            av.setClient(client);
+            av.setStatus(true);
+            pav.setClient(client);
+            showMainScreen(stage, av, pav);
+        } else {
+            Platform.exit();
+        }
     }
 
     private void showMainScreen(Stage stage, Avatar av, PartnerAvatar pav) {
@@ -169,6 +163,7 @@ public class App extends Application {
             Result<String> result = av.login(refreshToken);
             if (result != null && result.isSuccess()) {
                 av.setStatus(true);
+                pav.startListening();
                 showMainScreen(stage, av, pav);
                 return;
             }
@@ -177,6 +172,7 @@ public class App extends Application {
         Result<String> result = login(av);
         if (result != null && result.isSuccess()) {
             av.setStatus(true);
+            pav.startListening();
             showMainScreen(stage, av, pav);
         }
     }

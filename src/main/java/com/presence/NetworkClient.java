@@ -10,12 +10,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 public class NetworkClient {
     private static final String WEB_API_KEY;
     private static final String DB_URL;
+    private static final String MY_ID;
+    private static final String MY_SPRITE;
+    private static final String PARTNER_SPRITE;
+    private final long startTime = System.currentTimeMillis();
+
 
     static{
         try {
@@ -23,6 +30,9 @@ public class NetworkClient {
             prop.load(new FileInputStream("config.properties"));
             WEB_API_KEY = prop.getProperty("FIREBASE_API_KEY");
             DB_URL = prop.getProperty("FIREBASE_DB_URL");
+            MY_ID = prop.getProperty("MY_ID");
+            MY_SPRITE = prop.getProperty("MY_SPRITE");
+            PARTNER_SPRITE = prop.getProperty("PARTNER_SPRITE");
         } catch (IOException ex) {
             throw new RuntimeException("Could not load config.properties", ex);
         }
@@ -32,6 +42,20 @@ public class NetworkClient {
     private String userID;
     private String refreshToken;
 
+    public boolean isMe() {
+        return userID.equals(MY_ID);
+    }
+
+    public String getMySprite() {
+        return isMe() ? MY_SPRITE : PARTNER_SPRITE;
+    }
+    public String getPartnerSprite() {
+        return isMe() ? PARTNER_SPRITE : MY_SPRITE;
+    }
+    public String getPartnerUserID() {
+        //TODO When account is created change this to her actual id
+        return isMe() ? null : MY_ID;
+    }
     public String getRefreshToken() {
         return this.refreshToken;
     }
@@ -75,50 +99,108 @@ public class NetworkClient {
         this.userID = json.get("user_id").getAsString();
     }
 
-    public void sendPing(String msg) throws IOException {
-        String path = "/alerts/" + userID + ".json?auth=" + idToken;
-        sendPost(DB_URL + path, toJsonString(msg));
+    public void setMyStatus(String status) throws IOException {
+        String path = "/users/" + userID + "/status.json?auth=" + idToken;
+        sendPut(DB_URL + path, toJsonString(status));
     }
     public String toJsonString(String message) {
         return "\"" + message + "\"";
     }
 
-    public void listenForPing(String otherUserId) {
+    public void listenForPartnerStatus(Consumer<String> onStatusChange) {
         Thread listenerThread = new Thread(() -> {
-            while(true) {
-                try {
-                    String path = "/alerts/" + otherUserId + ".json?auth=" + idToken;
-                    URL url = new URL(path);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setRequestProperty("Accept", "text/event-stream");
-                    connection.setDoInput(true);
+            try {
+                String partnerID = getPartnerUserID();
+                if(partnerID == null) return;
 
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String path = DB_URL + "/users/" + partnerID + "/status.json?auth=" + idToken;
+                URL url = new URL(path);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "text/event-stream");
 
-                    String line;
-                    while((line = reader.readLine()) != null) {
-                        if (line.startsWith("data:")) {
-                            String data = line.substring(5).trim();
-                            if (!data.equals("null")) {
-                                String message = JsonParser.parseString(data).getAsString();
-                                Platform.runLater(() -> {
-                                    //TODO Update UI
-                                    System.out.println("Ping received: " + message);
-                                });
-                            }
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (line.startsWith("data:")) {
+                        String data = line.substring(5).trim();
+                        if (!data.equals("null")) {
+                            String status = JsonParser.parseString(data).getAsString();
+                            onStatusChange.accept(status);
                         }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         });
         listenerThread.setDaemon(true);
         listenerThread.start();
     }
 
+    public void sendEvent(String type) throws IOException {
+        String eventId = "event_" + System.currentTimeMillis();
+        String path = "/events/" + eventId + ".json?auth=" + idToken;
+        String body = String.format(
+                "{\"type\":\"%s\",\"from\":\"%s\",\"to\":\"%s\",\"timestamp\":%d}",
+                type, userID, getPartnerUserID(), System.currentTimeMillis()
+        );
+        sendPut(DB_URL + path, body);
+    }
 
+    public void listenForEvents(Consumer<JsonObject> onEvent) {
+        Thread listenerThread = new Thread(() -> {
+            try {
+                String path = DB_URL + "/events.json?auth=" + idToken;
+                URL url = new URL(path);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "text/event-stream");
+                conn.setDoInput(true);
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream()));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("data:")) {
+                        String data = line.substring(5).trim();
+                        if (!data.equals("null")) {
+                            try {
+                                JsonObject wrapper = JsonParser.parseString(data).getAsJsonObject();
+                                JsonObject events = wrapper.getAsJsonObject("data");
+                                if (events == null) return;
+
+
+                                for (var entry : events.entrySet()) {
+                                    JsonObject event = entry.getValue().getAsJsonObject();
+                                    if (event.has("to") &&
+                                            event.get("to").getAsString().equals(userID)) {
+
+                                        long timestamp = event.get("timestamp").getAsLong();
+                                        if (timestamp > startTime) {
+                                            onEvent.accept(event);
+                                        }
+
+                                        deleteEvent(entry.getKey());
+                                    }
+                                }
+                            } catch (Exception e) {
+                                // skip malformed events
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        listenerThread.setDaemon(true);
+        listenerThread.start();
+    }
 
     private JsonObject sendPost(String urlString, String body) throws IOException {
         URL url = new URL(urlString);
@@ -145,5 +227,17 @@ public class NetworkClient {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         return new String(conn.getInputStream().readAllBytes());
+    }
+    private void deleteEvent(String eventId) {
+        try {
+            String path = DB_URL + "/events/" + eventId + ".json?auth=" + idToken;
+            URL url = new URL(path);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.getResponseCode();
+            conn.disconnect();
+        } catch (IOException e) {
+            System.err.println("Failed to delete event: " + e.getMessage());
+        }
     }
 }

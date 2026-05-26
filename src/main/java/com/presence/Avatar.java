@@ -18,7 +18,12 @@ public class Avatar {
     }
 
     public void setStatus(boolean status) {
-        this.status = status;
+        try {
+            this.status = status;
+            this.client.setMyStatus(this.status ? "online" : "offline");
+        } catch (IOException e) {
+            System.err.println("Status write failed: " + e.getMessage());
+        }
     }
     public boolean getStatus() {
         return this.status;
@@ -32,12 +37,16 @@ public class Avatar {
     }
 
     public void ping() {
-        System.out.println(this.message);
+        try {
+            this.client.sendEvent("PING");
+        } catch (IOException e) {
+            System.err.println("Failed to send PING event");
+        }
     }
 
-    public void setSprite(String imagePath) {
+    public void setSprite() {
         try {
-            Image spriteImage = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm());
+            Image spriteImage = new Image(Objects.requireNonNull(getClass().getResource(this.client.getMySprite())).toExternalForm());
             this.sprite = new ImageView(spriteImage);
         } catch (Exception e) {
             System.err.println("Error loading sprite: " + e.getMessage());

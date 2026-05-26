@@ -1,8 +1,10 @@
 package com.presence;
 
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.IOException;
 import java.util.Objects;
 
 public class PartnerAvatar {
@@ -19,10 +21,10 @@ public class PartnerAvatar {
         this.client = client;
     }
 
-    public void setSprite(String imagePath) {
+    public void setSprite() {
         try {
             Image spriteImage = new Image(Objects.requireNonNull(
-                    getClass().getResource(imagePath)).toExternalForm());
+                    getClass().getResource(this.client.getPartnerSprite())).toExternalForm());
             this.sprite = new ImageView(spriteImage);
         } catch (Exception e) {
             System.err.println("Error loading sprite: " + e.getMessage());
@@ -41,16 +43,26 @@ public class PartnerAvatar {
         this.status = status;
     }
 
-    public void onPingReceived(String message) {
+    public void onPingReceived() {
         // TODO animate sprite, show notification etc
-        System.out.println("Partner sent: " + message);
+        System.out.println("Ping received from partner");
     }
 
-//    public void startListening(String partnerUserId) {
-//        client.listenForPing(partnerUserId, message -> {
-//            Platform.runLater(() -> onPingReceived(message));
-//        });
-//    }
+    public void startListening() {
+        this.client.listenForEvents(event -> {
+            String type = event.get("type").getAsString();
+            Platform.runLater(() -> {
+                if (type.equals("PING")) {
+                    onPingReceived();
+                }
+            });
+        });
+        this.client.listenForPartnerStatus(status -> {
+            Platform.runLater(() -> {
+                setStatus(status.equals("online"));
+            });
+        });
+    }
 
     public void reset() {
         this.sprite = null;
