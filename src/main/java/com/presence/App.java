@@ -117,12 +117,15 @@ public class App extends Application {
         logoutButton.setOnAction(event -> {
             SessionManager.clearSession();
             av.reset();
+            pav.reset();
             Result<String> loginResult = login(av);
             if (loginResult != null && !loginResult.isSuccess()) {
                 NetworkClient client = new NetworkClient();
                 av.setClient(client);
                 av.setStatus(true);
-                showMainScreen(stage, av);
+                pav.setClient(client);
+                pav.setStatus(true);
+                showMainScreen(stage, av, pav);
             } else {
                 Platform.exit();
             }

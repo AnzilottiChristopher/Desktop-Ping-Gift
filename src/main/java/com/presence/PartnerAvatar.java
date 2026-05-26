@@ -51,4 +51,10 @@ public class PartnerAvatar {
 //            Platform.runLater(() -> onPingReceived(message));
 //        });
 //    }
+
+    public void reset() {
+        this.sprite = null;
+        this.status = false;
+        this.client = null;
+    }
 }
