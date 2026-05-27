@@ -50,6 +50,10 @@ public class App extends Application {
         pav.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         pav.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
 
+        if (!pav.getStatus()) {
+            pav.playOfflineSequence();
+        }
+
         HBox spriteBox = new  HBox(5);
         spriteBox.getChildren().addAll(av.getSprite(), pav.getSprite());
         spriteBox.setAlignment(Pos.CENTER);
@@ -115,9 +119,9 @@ public class App extends Application {
         Button logoutButton = new Button("Logout");
         logoutButton.getStyleClass().addAll("title-bar-button");
         logoutButton.setOnAction(event -> {
+            av.setStatus(false);
             SessionManager.clearSession();
             av.reset();
-            av.setStatus(false);
             pav.reset();
             resetClients(stage, av, pav);
         });
@@ -127,14 +131,18 @@ public class App extends Application {
     }
 
     private void resetClients(Stage stage, Avatar av, PartnerAvatar pav) {
+        stage.hide();
+        NetworkClient client = new NetworkClient();
+        av.setClient(client);
+
         Result<String> loginResult = login(av);
-        if (loginResult != null && !loginResult.isSuccess()) {
-            NetworkClient client = new NetworkClient();
-            av.setClient(client);
+        if (loginResult != null && loginResult.isSuccess()) {
             av.setStatus(true);
             pav.setClient(client);
+            pav.startListening();
             showMainScreen(stage, av, pav);
         } else {
+            av.setClient(null);
             Platform.exit();
         }
     }

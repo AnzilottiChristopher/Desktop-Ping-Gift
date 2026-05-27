@@ -1,6 +1,7 @@
 package com.presence;
 
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import javafx.application.Platform;
@@ -19,9 +20,30 @@ public class NetworkClient {
     private static final String WEB_API_KEY;
     private static final String DB_URL;
     private static final String MY_ID;
+    private static final String PARTNER_ID;
     private static final String MY_SPRITE;
     private static final String PARTNER_SPRITE;
     private final long startTime = System.currentTimeMillis();
+
+
+    //More Sprites
+    private static final String MY_OFFLINE_SHEET;
+    private static final String MY_SLEEP_SHEET;
+    private static final String PARTNER_OFFLINE_SHEET;
+    private static final String PARTNER_SLEEP_SHEET;
+
+    //Animation Frame Information "Chris's"
+    private static final int MY_OFFLINE_FRAME_W;
+    private static final int MY_OFFLINE_FRAME_H;
+    private static final int MY_SLEEP_FRAME_W;
+    private static final int MY_SLEEP_FRAME_H;
+
+    //Animation Frame Information "Danielle's"
+    private static final int PARTNER_OFFLINE_FRAME_W;
+    private static final int PARTNER_OFFLINE_FRAME_H;
+    private static final int PARTNER_SLEEP_FRAME_W;
+    private static final int PARTNER_SLEEP_FRAME_H;
+
 
 
     static{
@@ -31,8 +53,23 @@ public class NetworkClient {
             WEB_API_KEY = prop.getProperty("FIREBASE_API_KEY");
             DB_URL = prop.getProperty("FIREBASE_DB_URL");
             MY_ID = prop.getProperty("MY_ID");
+            PARTNER_ID = prop.getProperty("PARTNER_ID");
             MY_SPRITE = prop.getProperty("MY_SPRITE");
             PARTNER_SPRITE = prop.getProperty("PARTNER_SPRITE");
+            MY_OFFLINE_SHEET = prop.getProperty("MY_OFFLINE_SHEET");
+            MY_SLEEP_SHEET = prop.getProperty("MY_SLEEP_SHEET");
+            PARTNER_OFFLINE_SHEET = prop.getProperty("PARTNER_OFFLINE_SHEET");
+            PARTNER_SLEEP_SHEET = prop.getProperty("PARTNER_SLEEP_SHEET");
+
+            //Frame Information
+            MY_OFFLINE_FRAME_W = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_W"));
+            MY_OFFLINE_FRAME_H = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_H"));
+            MY_SLEEP_FRAME_W = Integer.parseInt(prop.getProperty("MY_SLEEP_FRAME_W"));
+            MY_SLEEP_FRAME_H = Integer.parseInt(prop.getProperty("MY_SLEEP_FRAME_H"));
+            PARTNER_OFFLINE_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_OFFLINE_FRAME_W"));
+            PARTNER_OFFLINE_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_OFFLINE_FRAME_H"));
+            PARTNER_SLEEP_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_SLEEP_FRAME_W"));
+            PARTNER_SLEEP_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_SLEEP_FRAME_H"));
         } catch (IOException ex) {
             throw new RuntimeException("Could not load config.properties", ex);
         }
@@ -52,9 +89,52 @@ public class NetworkClient {
     public String getPartnerSprite() {
         return isMe() ? PARTNER_SPRITE : MY_SPRITE;
     }
+    public String getMyOfflineSheet() {
+        return isMe() ? MY_OFFLINE_SHEET : PARTNER_OFFLINE_SHEET;
+    }
+    public String getMySleepSheet() {
+        return isMe() ? MY_SLEEP_SHEET : PARTNER_SLEEP_SHEET;
+    }
+    public String getPartnerOfflineSheet() {
+        return isMe() ? PARTNER_OFFLINE_SHEET : MY_OFFLINE_SHEET;
+    }
+    public String getPartnerSleepSheet() {
+        return isMe() ? PARTNER_SLEEP_SHEET : MY_SLEEP_SHEET;
+    }
+    public int getMyOfflineFrameW() {
+        return isMe() ? MY_OFFLINE_FRAME_W : PARTNER_OFFLINE_FRAME_W;
+    }
+
+    public int getMyOfflineFrameH() {
+        return isMe() ? MY_OFFLINE_FRAME_H : PARTNER_OFFLINE_FRAME_H;
+    }
+
+    public int getMySleepFrameW() {
+        return isMe() ? MY_SLEEP_FRAME_W : PARTNER_SLEEP_FRAME_W;
+    }
+
+    public int getMySleepFrameH() {
+        return isMe() ? MY_SLEEP_FRAME_H : PARTNER_SLEEP_FRAME_H;
+    }
+
+    public int getPartnerOfflineFrameW() {
+        return isMe() ? PARTNER_OFFLINE_FRAME_W : MY_OFFLINE_FRAME_W;
+    }
+
+    public int getPartnerOfflineFrameH() {
+        return isMe() ? PARTNER_OFFLINE_FRAME_H : MY_OFFLINE_FRAME_H;
+    }
+
+    public int getPartnerSleepFrameW() {
+        return isMe() ? PARTNER_SLEEP_FRAME_W : MY_SLEEP_FRAME_W;
+    }
+
+    public int getPartnerSleepFrameH() {
+        return isMe() ? PARTNER_SLEEP_FRAME_H : MY_SLEEP_FRAME_H;
+    }
     public String getPartnerUserID() {
         //TODO When account is created change this to her actual id
-        return isMe() ? null : MY_ID;
+        return isMe() ? PARTNER_ID : MY_ID;
     }
     public String getRefreshToken() {
         return this.refreshToken;
@@ -126,8 +206,12 @@ public class NetworkClient {
                     if (line.startsWith("data:")) {
                         String data = line.substring(5).trim();
                         if (!data.equals("null")) {
-                            String status = JsonParser.parseString(data).getAsString();
-                            onStatusChange.accept(status);
+                            JsonObject wrapper = JsonParser.parseString(data).getAsJsonObject();
+                            JsonElement dataElement = wrapper.get("data");
+                            if (dataElement != null && dataElement.isJsonPrimitive()) {
+                                String status = dataElement.getAsString();
+                                onStatusChange.accept(status);
+                            }
                         }
                     }
                 }
@@ -139,6 +223,18 @@ public class NetworkClient {
         });
         listenerThread.setDaemon(true);
         listenerThread.start();
+    }
+    public void getPartnerStatus(Consumer<String> onStatus) {
+        new Thread(() -> {
+            try {
+                String path = DB_URL + "/users/" + getPartnerUserID() + "/status.json?auth=" + idToken;
+                String response = sendGet(path);
+                String status = JsonParser.parseString(response).getAsString();
+                onStatus.accept(status);
+            } catch (Exception e) {
+                onStatus.accept("offline");
+            }
+        }).start();
     }
 
     public void sendEvent(String type) throws IOException {
