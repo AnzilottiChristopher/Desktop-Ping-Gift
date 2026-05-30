@@ -1,5 +1,4 @@
 keys
 keys/*
-src/resources/assets/*
 config.properties
 session.properties
