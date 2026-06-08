@@ -30,7 +30,10 @@ jobs:
         run: mvn clean package -DskipTests -P windows
 
       - name: Copy JavaFX libs into input
-        run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
+        run: |
+          Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
+          $sdkBin = Split-Path $env:JAVAFX_PATH -Parent | Join-Path -ChildPath "bin"
+          Copy-Item -Path "$sdkBin\*" -Destination target -Recurse -Force
 
       - name: Run jpackage for Windows
         shell: cmd
