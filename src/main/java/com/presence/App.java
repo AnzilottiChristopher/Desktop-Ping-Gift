@@ -199,6 +199,17 @@ public class App extends Application {
 
 
     public static void main(String[] args) {
-        launch(args);
+        try {
+            launch(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // write to a log file so we can see it
+            try {
+                java.io.FileWriter fw = new java.io.FileWriter(
+                        System.getProperty("user.home") + "/presence/error.log");
+                e.printStackTrace(new java.io.PrintWriter(fw));
+                fw.close();
+            } catch (Exception ex) {}
+        }
     }
 }
