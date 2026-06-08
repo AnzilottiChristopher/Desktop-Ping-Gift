@@ -29,12 +29,6 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests -P windows
 
-      - name: Copy JavaFX libs into input
-        run: |
-          Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
-          $sdkBin = Split-Path $env:JAVAFX_PATH -Parent | Join-Path -ChildPath "bin"
-          Copy-Item -Path "$sdkBin\*" -Destination target -Recurse -Force
-
       - name: Run jpackage for Windows
         shell: cmd
         run: |
@@ -44,11 +38,18 @@ jobs:
             --main-jar presence-app-1.0-SNAPSHOT.jar ^
             --main-class com.presence.App ^
             --type app-image ^
+            --module-path "%JAVAFX_PATH%" ^
+            --add-modules javafx.controls,javafx.fxml ^
             --icon src/main/resources/icons/icon.ico ^
             --app-version 1.0.0 ^
             --vendor "AnzilottiChristopher" ^
             --description "Presence - Stay connected" ^
             --dest output
+
+      - name: Copy JavaFX native DLLs to runtime bin
+        run: |
+          $sdkBin = Split-Path $env:JAVAFX_PATH -Parent | Join-Path -ChildPath "bin"
+          Copy-Item -Path "$sdkBin\*.dll" -Destination "output\Presence\runtime\bin" -Force
 
       - name: Fix Presence.cfg
         shell: cmd
@@ -57,19 +58,9 @@ jobs:
           echo [Application]
           echo app.classpath=$APPDIR\presence-app-1.0-SNAPSHOT.jar
           echo app.mainclass=com.presence.App
-          echo app.classpath=$APPDIR\javafx-swt.jar
-          echo app.classpath=$APPDIR\javafx.base.jar
-          echo app.classpath=$APPDIR\javafx.controls.jar
-          echo app.classpath=$APPDIR\javafx.fxml.jar
-          echo app.classpath=$APPDIR\javafx.graphics.jar
-          echo app.classpath=$APPDIR\javafx.media.jar
-          echo app.classpath=$APPDIR\javafx.swing.jar
-          echo app.classpath=$APPDIR\javafx.web.jar
           echo.
           echo [JavaOptions]
           echo java-options=-Djpackage.app-version=1.0.0
-          echo java-options=-Djava.library.path=$APPDIR
-          echo java-options=--module-path $APPDIR\javafx.base.jar;$APPDIR\javafx.controls.jar;$APPDIR\javafx.fxml.jar;$APPDIR\javafx.graphics.jar;$APPDIR\javafx.media.jar;$APPDIR\javafx.swing.jar;$APPDIR\javafx.web.jar
           echo java-options=--add-modules javafx.controls,javafx.fxml
           ) > output\Presence\app\Presence.cfg
 
