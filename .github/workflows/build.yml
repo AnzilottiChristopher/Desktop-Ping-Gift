@@ -21,6 +21,10 @@ jobs:
       - name: Build fat JAR with Windows JavaFX
         run: mvn clean package -DskipTests -Pwindows
 
+      - name: Test JAR runs
+        run: java -jar target/presence-app-1.0-SNAPSHOT.jar
+        continue-on-error: true
+
       - name: Run jpackage for Windows
         run: |
           jpackage `
