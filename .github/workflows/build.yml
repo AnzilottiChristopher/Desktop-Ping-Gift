@@ -27,7 +27,7 @@ jobs:
           echo "JAVAFX_PATH=${{ github.workspace }}\javafx-win\javafx-sdk-21.0.2\lib" >> $env:GITHUB_ENV
 
       - name: Build JAR
-        run: mvn clean package -DskipTests
+        run: mvn clean package -DskipTests -P windows
 
       - name: Copy JavaFX libs into input
         run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
