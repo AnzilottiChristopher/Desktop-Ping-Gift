@@ -29,18 +29,8 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests
 
-      - name: List target contents
-        run: Get-ChildItem target
-
       - name: Copy JavaFX libs into input
         run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
-
-      - name: List target after copy
-        run: Get-ChildItem target
-
-      - name: Test JAR with JavaFX module path
-        run: java --module-path "$env:JAVAFX_PATH" --add-modules javafx.controls,javafx.fxml -jar target/presence-app-1.0-SNAPSHOT.jar
-        continue-on-error: true
 
       - name: Run jpackage for Windows
         run: |
@@ -54,12 +44,9 @@ jobs:
             --app-version 1.0.0 `
             --vendor "AnzilottiChristopher" `
             --description "Presence - Stay connected" `
-            --java-options "--module-path ${'$'}APPDIR --add-modules javafx.controls,javafx.fxml" `
+            "--java-options=--module-path `$APPDIR" `
+            "--java-options=--add-modules javafx.controls,javafx.fxml" `
             --dest output
-
-      - name: List output contents
-        run: Get-ChildItem output/Presence
-        continue-on-error: true
 
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
@@ -91,10 +78,6 @@ jobs:
       - name: Copy JavaFX libs into input
         run: cp -r "$JAVAFX_PATH/." target/
 
-      - name: Test JAR with JavaFX module path
-        run: java --module-path "$JAVAFX_PATH" --add-modules javafx.controls,javafx.fxml -jar target/presence-app-1.0-SNAPSHOT.jar
-        continue-on-error: true
-
       - name: Convert PNG to ICNS
         run: |
           mkdir -p icon.iconset
@@ -122,7 +105,8 @@ jobs:
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
             --description "Presence - Stay connected" \
-            --java-options "--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" \
+            --java-options "--module-path \$APPDIR" \
+            --java-options "--add-modules javafx.controls,javafx.fxml" \
             --dest output
 
       - name: Upload Mac installer
