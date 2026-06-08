@@ -200,16 +200,14 @@ public class App extends Application {
 
     public static void main(String[] args) {
         try {
-            launch(args);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // write to a log file so we can see it
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter(
-                        System.getProperty("user.home") + "/presence/error.log");
-                e.printStackTrace(new java.io.PrintWriter(fw));
-                fw.close();
-            } catch (Exception ex) {}
-        }
+            String home = System.getProperty("user.home");
+            java.io.FileWriter fw = new java.io.FileWriter(home + "/presence/startup.log");
+            fw.write("App starting\n");
+            fw.write("Home: " + home + "\n");
+            fw.write("Config exists: " + new java.io.File(home + "/presence/config.properties").exists() + "\n");
+            fw.write("Sprite exists: " + new java.io.File(home + "/presence/sprite.properties").exists() + "\n");
+            fw.close();
+        } catch (Exception e) {}
+        launch(args);
     }
 }
