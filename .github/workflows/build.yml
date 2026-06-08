@@ -33,19 +33,18 @@ jobs:
         run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
 
       - name: Run jpackage for Windows
+        shell: cmd
         run: |
-          jpackage `
-            --input target `
-            --name Presence `
-            --main-jar presence-app-1.0-SNAPSHOT.jar `
-            --main-class com.presence.App `
-            --type app-image `
-            --icon src/main/resources/icons/icon.ico `
-            --app-version 1.0.0 `
-            --vendor "AnzilottiChristopher" `
-            --description "Presence - Stay connected" `
-            --java-options="--module-path `$APPDIR\lib" `
-            --java-options="--add-modules javafx.controls,javafx.fxml" `
+          jpackage ^
+            --input target ^
+            --name Presence ^
+            --main-jar presence-app-1.0-SNAPSHOT.jar ^
+            --main-class com.presence.App ^
+            --type app-image ^
+            --icon src/main/resources/icons/icon.ico ^
+            --app-version 1.0.0 ^
+            --vendor "AnzilottiChristopher" ^
+            --description "Presence - Stay connected" ^
             --dest output
 
       - name: Fix Presence.cfg
@@ -127,9 +126,27 @@ jobs:
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
             --description "Presence - Stay connected" \
-            --java-options="--module-path \$APPDIR/lib" \
-            --java-options="--add-modules javafx.controls,javafx.fxml" \
             --dest output
+
+      - name: Fix Presence.cfg for Mac
+        run: |
+          CFG_PATH=$(find output -name "Presence.cfg" | head -1)
+          echo "[Application]" > "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/presence-app-1.0-SNAPSHOT.jar" >> "$CFG_PATH"
+          echo "app.mainclass=com.presence.App" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx-swt.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.base.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.controls.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.fxml.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.graphics.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.media.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.swing.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/javafx.web.jar" >> "$CFG_PATH"
+          echo "app.classpath=\$APPDIR/original-presence-app-1.0-SNAPSHOT.jar" >> "$CFG_PATH"
+          echo "" >> "$CFG_PATH"
+          echo "[JavaOptions]" >> "$CFG_PATH"
+          echo "java-options=-Djpackage.app-version=1.0.0" >> "$CFG_PATH"
+          echo "java-options=--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" >> "$CFG_PATH"
 
       - name: Upload Mac installer
         uses: actions/upload-artifact@v4
