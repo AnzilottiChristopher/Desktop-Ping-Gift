@@ -23,6 +23,9 @@ public class PartnerAvatar {
     private Timeline currentAnimation;
     private int currentFrame = 0;
 
+    //Callback for Avatar reaction
+    private Runnable onPingCallback;
+
     public PartnerAvatar(NetworkClient client) {
         this.client = client;
         this.status = false; // starts offline until we know they're connected
@@ -52,6 +55,11 @@ public class PartnerAvatar {
     public ImageView getSprite() {
         return this.sprite;
     }
+
+    public void setOnPingCallback(Runnable onPingCallback) {
+        this.onPingCallback = onPingCallback;
+    }
+
 
     public void playAnimation(String name, int frameWidth, int frameHeight, int totalFrame,
                               double fps, boolean loop) {
@@ -143,6 +151,11 @@ public class PartnerAvatar {
                             8, 3, true);
                 });
     }
+    public void playSendAnimation() {
+        playAnimation("send",
+                client.getPartnerSendFrameW(), client.getPartnerSendFrameH(),
+                6, 4, false, this::stopAnimation);
+    }
 
     private void loadSheet(String name, String path) {
         try {
@@ -170,8 +183,10 @@ public class PartnerAvatar {
     }
 
     public void onPingReceived() {
-        // TODO animate sprite, show notification etc
-        System.out.println("Ping received from partner");
+        playSendAnimation();
+        if (onPingCallback != null) {
+            onPingCallback.run();
+        }
     }
 
     public void startListening() {

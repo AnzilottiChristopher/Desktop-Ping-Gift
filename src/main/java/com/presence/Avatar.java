@@ -153,6 +153,11 @@ public class Avatar {
                 client.getMySendFrameW(), client.getMySendFrameH(),
                 6, 4, false, this::stopAnimation);
     }
+    public void playReactionAnimation() {
+        playAnimation("reaction",
+                client.getMyReactionFrameW(), client.getMyReactionFrameH(),
+                6, 4, false, this::stopAnimation);
+    }
 
     public Result<String> login(String email, String password) {
         try {

@@ -23,7 +23,6 @@ public class NetworkClient {
     private static final String PARTNER_ID;
     private static final String MY_SPRITE;
     private static final String PARTNER_SPRITE;
-    private final long startTime = System.currentTimeMillis();
 
 
     //More Sprites
@@ -66,10 +65,10 @@ public class NetworkClient {
             DB_URL = prop.getProperty("FIREBASE_DB_URL");
             MY_ID = prop.getProperty("MY_ID");
             PARTNER_ID = prop.getProperty("PARTNER_ID");
-            MY_SPRITE = prop.getProperty("MY_SPRITE");
 
             prop.load(new FileInputStream("sprite.properties"));
 
+            MY_SPRITE = prop.getProperty("MY_SPRITE");
             PARTNER_SPRITE = prop.getProperty("PARTNER_SPRITE");
             MY_OFFLINE_SHEET = prop.getProperty("MY_OFFLINE_SHEET");
             MY_SLEEP_SHEET = prop.getProperty("MY_SLEEP_SHEET");
@@ -79,7 +78,8 @@ public class NetworkClient {
             MY_SEND_SHEET = prop.getProperty("MY_SEND_SHEET");
             PARTNER_REACTION_SHEET = prop.getProperty("PARTNER_REACTION_SHEET");
             PARTNER_SEND_SHEET = prop.getProperty("PARTNER_SEND_SHEET");
-// Frame Information
+
+            // Frame Information
             MY_OFFLINE_FRAME_W = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_W"));
             MY_OFFLINE_FRAME_H = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_H"));
             MY_SLEEP_FRAME_W = Integer.parseInt(prop.getProperty("MY_SLEEP_FRAME_W"));
@@ -108,6 +108,10 @@ public class NetworkClient {
     public boolean isMe() {
         return userID.equals(MY_ID);
     }
+
+
+
+    //////////////////////////// ANIMATION STUFF THAT SHOULD BE ITS OWN CLASS //////////////////////////////////////////
     public String getMyReactionSheet() {
         return isMe() ? MY_REACTION_SHEET : PARTNER_REACTION_SHEET;
     }
@@ -172,8 +176,14 @@ public class NetworkClient {
     public int getPartnerSleepFrameH() {
         return isMe() ? PARTNER_SLEEP_FRAME_H : MY_SLEEP_FRAME_H;
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
     public String getPartnerUserID() {
         return isMe() ? PARTNER_ID : MY_ID;
+    }
+    public String getUserID() {
+        return userID;
     }
     public String getRefreshToken() {
         return this.refreshToken;
@@ -310,29 +320,21 @@ public class NetworkClient {
                                 if (dataElement == null || dataElement.isJsonNull()) continue;
 
                                 if (eventPath.equals("/")) {
-                                    // initial dump - map of all events
                                     JsonObject events = dataElement.getAsJsonObject();
                                     for (var entry : events.entrySet()) {
                                         JsonObject event = entry.getValue().getAsJsonObject();
                                         if (event.has("to") &&
                                                 event.get("to").getAsString().equals(userID)) {
-                                            long timestamp = event.get("timestamp").getAsLong();
-                                            if (timestamp > startTime) {
-                                                onEvent.accept(event);
-                                            }
+                                            onEvent.accept(event);
                                             deleteEvent(entry.getKey());
                                         }
                                     }
                                 } else {
-                                    // live update - single event, path is the event ID
                                     String eventId = eventPath.substring(1);
                                     JsonObject event = dataElement.getAsJsonObject();
                                     if (event.has("to") &&
                                             event.get("to").getAsString().equals(userID)) {
-                                        long timestamp = event.get("timestamp").getAsLong();
-                                        if (timestamp > startTime) {
-                                            onEvent.accept(event);
-                                        }
+                                        onEvent.accept(event);
                                         deleteEvent(eventId);
                                     }
                                 }

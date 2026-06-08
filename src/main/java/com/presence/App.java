@@ -89,6 +89,8 @@ public class App extends Application {
         BorderPane root = new BorderPane();
         root.setCenter(vbox);
 
+        pav.setOnPingCallback(av::playReactionAnimation);
+
         return root;
     }
 
