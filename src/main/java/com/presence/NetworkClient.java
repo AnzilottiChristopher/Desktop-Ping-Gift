@@ -57,6 +57,16 @@ public class NetworkClient {
     static{
         try {
             String home = System.getProperty("user.home");
+            try {
+                java.io.File dir = new java.io.File(home + "/presence/");
+                dir.mkdirs();
+                java.io.FileWriter fw = new java.io.FileWriter(home + "/presence/startup.log");
+                fw.write("NetworkClient static block starting\n");
+                fw.write("Home: " + home + "\n");
+                fw.write("Config exists: " + new java.io.File(home + "/presence/config.properties").exists() + "\n");
+                fw.write("Sprite exists: " + new java.io.File(home + "/presence/sprite.properties").exists() + "\n");
+                fw.close();
+            } catch (Exception logEx) {}
             String presencePath = home + "/presence/";
             File presenceDir = new File(presencePath);
             if(!presenceDir.exists()){
