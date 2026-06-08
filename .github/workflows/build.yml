@@ -33,20 +33,42 @@ jobs:
         run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
 
       - name: Run jpackage for Windows
+        run: |
+          jpackage `
+            --input target `
+            --name Presence `
+            --main-jar presence-app-1.0-SNAPSHOT.jar `
+            --main-class com.presence.App `
+            --type app-image `
+            --icon src/main/resources/icons/icon.ico `
+            --app-version 1.0.0 `
+            --vendor "AnzilottiChristopher" `
+            --description "Presence - Stay connected" `
+            --java-options="--module-path `$APPDIR\lib" `
+            --java-options="--add-modules javafx.controls,javafx.fxml" `
+            --dest output
+
+      - name: Fix Presence.cfg
         shell: cmd
         run: |
-          jpackage ^
-            --input target ^
-            --name Presence ^
-            --main-jar presence-app-1.0-SNAPSHOT.jar ^
-            --main-class com.presence.App ^
-            --type app-image ^
-            --icon src/main/resources/icons/icon.ico ^
-            --app-version 1.0.0 ^
-            --vendor "AnzilottiChristopher" ^
-            --description "Presence - Stay connected" ^
-            --java-options "--module-path $APPDIR --add-modules javafx.controls,javafx.fxml" ^
-            --dest output
+          (
+          echo [Application]
+          echo app.classpath=$APPDIR\presence-app-1.0-SNAPSHOT.jar
+          echo app.mainclass=com.presence.App
+          echo app.classpath=$APPDIR\javafx-swt.jar
+          echo app.classpath=$APPDIR\javafx.base.jar
+          echo app.classpath=$APPDIR\javafx.controls.jar
+          echo app.classpath=$APPDIR\javafx.fxml.jar
+          echo app.classpath=$APPDIR\javafx.graphics.jar
+          echo app.classpath=$APPDIR\javafx.media.jar
+          echo app.classpath=$APPDIR\javafx.swing.jar
+          echo app.classpath=$APPDIR\javafx.web.jar
+          echo app.classpath=$APPDIR\original-presence-app-1.0-SNAPSHOT.jar
+          echo.
+          echo [JavaOptions]
+          echo java-options=-Djpackage.app-version=1.0.0
+          echo java-options=--module-path $APPDIR --add-modules javafx.controls,javafx.fxml
+          ) > output\Presence\app\Presence.cfg
 
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
@@ -68,7 +90,7 @@ jobs:
 
       - name: Download JavaFX Mac SDK
         run: |
-          curl -L -o javafx-mac.zip "https://download2.gluonhq.com.openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
+          curl -L -o javafx-mac.zip "https://download2.gluonhq.com/openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
           unzip javafx-mac.zip -d javafx-mac
           echo "JAVAFX_PATH=${{ github.workspace }}/javafx-mac/javafx-sdk-21.0.2/lib" >> $GITHUB_ENV
 
@@ -105,7 +127,8 @@ jobs:
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
             --description "Presence - Stay connected" \
-            --java-options "--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" \
+            --java-options="--module-path \$APPDIR/lib" \
+            --java-options="--add-modules javafx.controls,javafx.fxml" \
             --dest output
 
       - name: Upload Mac installer
