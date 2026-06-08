@@ -65,11 +65,11 @@ jobs:
           echo app.classpath=$APPDIR\javafx.media.jar
           echo app.classpath=$APPDIR\javafx.swing.jar
           echo app.classpath=$APPDIR\javafx.web.jar
-          echo app.classpath=$APPDIR\original-presence-app-1.0-SNAPSHOT.jar
           echo.
           echo [JavaOptions]
           echo java-options=-Djpackage.app-version=1.0.0
-          echo java-options=--module-path $APPDIR --add-modules javafx.controls,javafx.fxml
+          echo java-options=--module-path $APPDIR\javafx.base.jar;$APPDIR\javafx.controls.jar;$APPDIR\javafx.fxml.jar;$APPDIR\javafx.graphics.jar;$APPDIR\javafx.media.jar;$APPDIR\javafx.swing.jar;$APPDIR\javafx.web.jar
+          echo java-options=--add-modules javafx.controls,javafx.fxml
           ) > output\Presence\app\Presence.cfg
 
       - name: Upload Windows app
