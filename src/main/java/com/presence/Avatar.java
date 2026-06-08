@@ -44,6 +44,10 @@ public class Avatar {
         return this.message;
     }
 
+    public NetworkClient getClient() {
+        return client;
+    }
+
     public void ping() {
         try {
             this.client.sendEvent("PING");
@@ -58,7 +62,8 @@ public class Avatar {
             spriteSheets.put("idle", spriteImage);
             this.sprite = new ImageView(spriteImage);
 
-            //TODO Upload Animations here
+            loadSheet("send", this.client.getMySendSheet());
+            loadSheet("reaction", this.client.getMyReactionSheet());
         } catch (Exception e) {
             System.err.println("Error loading sprite: " + e.getMessage());
         }
@@ -100,6 +105,53 @@ public class Avatar {
         sprite.setViewport(null);
         sprite.setImage(spriteSheets.get("idle"));
         currentFrame = 0;
+    }
+
+    public void playAnimation(String name, int frameWidth, int frameHeight, int totalFrame,
+                              double fps, boolean loop, Runnable onFinish) {
+        if (this.currentAnimation != null) {
+            this.currentAnimation.stop();
+        }
+
+        Image sheet = spriteSheets.get(name);
+        if (sheet == null) {
+            System.err.println("No sheet loaded for: " + name);
+            return;
+        }
+
+        sprite.setImage(sheet);
+        currentFrame = 0;
+
+        sprite.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
+
+        currentAnimation = new Timeline(
+                new KeyFrame(Duration.millis(1000.0 / fps), event -> {
+                    if (sprite == null) {
+                        currentAnimation.stop();
+                        return;
+                    }
+                    int x = currentFrame * frameWidth;
+                    sprite.setViewport(new Rectangle2D(x, 0, frameWidth, frameHeight));
+                    currentFrame++;
+                    if (currentFrame >= totalFrame) {
+                        if (loop) {
+                            currentFrame = 0;
+                        } else {
+                            currentAnimation.stop();
+                            if (onFinish != null) {
+                                onFinish.run();
+                            }
+                        }
+                    }
+                })
+        );
+        currentAnimation.setCycleCount(loop ? Timeline.INDEFINITE : totalFrame);
+        currentAnimation.play();
+    }
+    public void playSendAnimation() {
+        playAnimation("send",
+                client.getMySendFrameW(), client.getMySendFrameH(),
+                6, 4, false, this::stopAnimation);
     }
 
     public Result<String> login(String email, String password) {

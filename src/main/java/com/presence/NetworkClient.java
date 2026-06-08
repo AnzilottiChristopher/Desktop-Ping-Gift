@@ -31,18 +31,30 @@ public class NetworkClient {
     private static final String MY_SLEEP_SHEET;
     private static final String PARTNER_OFFLINE_SHEET;
     private static final String PARTNER_SLEEP_SHEET;
+    private static final String MY_REACTION_SHEET;
+    private static final String MY_SEND_SHEET;
+    private static final String PARTNER_REACTION_SHEET;
+    private static final String PARTNER_SEND_SHEET;
 
     //Animation Frame Information "Chris's"
     private static final int MY_OFFLINE_FRAME_W;
     private static final int MY_OFFLINE_FRAME_H;
     private static final int MY_SLEEP_FRAME_W;
     private static final int MY_SLEEP_FRAME_H;
+    private static final int MY_REACTION_FRAME_W;
+    private static final int MY_REACTION_FRAME_H;
+    private static final int MY_SEND_FRAME_W;
+    private static final int MY_SEND_FRAME_H;
 
     //Animation Frame Information "Danielle's"
     private static final int PARTNER_OFFLINE_FRAME_W;
     private static final int PARTNER_OFFLINE_FRAME_H;
     private static final int PARTNER_SLEEP_FRAME_W;
     private static final int PARTNER_SLEEP_FRAME_H;
+    private static final int PARTNER_REACTION_FRAME_W;
+    private static final int PARTNER_REACTION_FRAME_H;
+    private static final int PARTNER_SEND_FRAME_W;
+    private static final int PARTNER_SEND_FRAME_H;
 
 
 
@@ -55,23 +67,37 @@ public class NetworkClient {
             MY_ID = prop.getProperty("MY_ID");
             PARTNER_ID = prop.getProperty("PARTNER_ID");
             MY_SPRITE = prop.getProperty("MY_SPRITE");
+
+            prop.load(new FileInputStream("sprite.properties"));
+
             PARTNER_SPRITE = prop.getProperty("PARTNER_SPRITE");
             MY_OFFLINE_SHEET = prop.getProperty("MY_OFFLINE_SHEET");
             MY_SLEEP_SHEET = prop.getProperty("MY_SLEEP_SHEET");
             PARTNER_OFFLINE_SHEET = prop.getProperty("PARTNER_OFFLINE_SHEET");
             PARTNER_SLEEP_SHEET = prop.getProperty("PARTNER_SLEEP_SHEET");
-
-            //Frame Information
+            MY_REACTION_SHEET = prop.getProperty("MY_REACTION_SHEET");
+            MY_SEND_SHEET = prop.getProperty("MY_SEND_SHEET");
+            PARTNER_REACTION_SHEET = prop.getProperty("PARTNER_REACTION_SHEET");
+            PARTNER_SEND_SHEET = prop.getProperty("PARTNER_SEND_SHEET");
+// Frame Information
             MY_OFFLINE_FRAME_W = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_W"));
             MY_OFFLINE_FRAME_H = Integer.parseInt(prop.getProperty("MY_OFFLINE_FRAME_H"));
             MY_SLEEP_FRAME_W = Integer.parseInt(prop.getProperty("MY_SLEEP_FRAME_W"));
             MY_SLEEP_FRAME_H = Integer.parseInt(prop.getProperty("MY_SLEEP_FRAME_H"));
+            MY_REACTION_FRAME_W = Integer.parseInt(prop.getProperty("MY_REACTION_FRAME_W"));
+            MY_REACTION_FRAME_H = Integer.parseInt(prop.getProperty("MY_REACTION_FRAME_H"));
+            MY_SEND_FRAME_W = Integer.parseInt(prop.getProperty("MY_SEND_FRAME_W"));
+            MY_SEND_FRAME_H = Integer.parseInt(prop.getProperty("MY_SEND_FRAME_H"));
             PARTNER_OFFLINE_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_OFFLINE_FRAME_W"));
             PARTNER_OFFLINE_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_OFFLINE_FRAME_H"));
             PARTNER_SLEEP_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_SLEEP_FRAME_W"));
             PARTNER_SLEEP_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_SLEEP_FRAME_H"));
+            PARTNER_REACTION_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_REACTION_FRAME_W"));
+            PARTNER_REACTION_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_REACTION_FRAME_H"));
+            PARTNER_SEND_FRAME_W = Integer.parseInt(prop.getProperty("PARTNER_SEND_FRAME_W"));
+            PARTNER_SEND_FRAME_H = Integer.parseInt(prop.getProperty("PARTNER_SEND_FRAME_H"));
         } catch (IOException ex) {
-            throw new RuntimeException("Could not load config.properties", ex);
+            throw new RuntimeException("Could not load config.properties or sprite.properties", ex);
         }
     }
 
@@ -82,6 +108,42 @@ public class NetworkClient {
     public boolean isMe() {
         return userID.equals(MY_ID);
     }
+    public String getMyReactionSheet() {
+        return isMe() ? MY_REACTION_SHEET : PARTNER_REACTION_SHEET;
+    }
+    public String getMySendSheet() {
+        return isMe() ? MY_SEND_SHEET : PARTNER_SEND_SHEET;
+    }
+    public String getPartnerReactionSheet() {
+        return isMe() ? PARTNER_REACTION_SHEET : MY_REACTION_SHEET;
+    }
+    public String getPartnerSendSheet() {
+        return isMe() ? PARTNER_SEND_SHEET : MY_SEND_SHEET;
+    }
+    public int getMyReactionFrameW() {
+        return isMe() ? MY_REACTION_FRAME_W : PARTNER_REACTION_FRAME_W;
+    }
+    public int getMyReactionFrameH() {
+        return isMe() ? MY_REACTION_FRAME_H : PARTNER_REACTION_FRAME_H;
+    }
+    public int getMySendFrameW() {
+        return isMe() ? MY_SEND_FRAME_W : PARTNER_SEND_FRAME_W;
+    }
+    public int getMySendFrameH() {
+        return isMe() ? MY_SEND_FRAME_H : PARTNER_SEND_FRAME_H;
+    }
+    public int getPartnerReactionFrameW() {
+        return isMe() ? PARTNER_REACTION_FRAME_W : MY_REACTION_FRAME_W;
+    }
+    public int getPartnerReactionFrameH() {
+        return isMe() ? PARTNER_REACTION_FRAME_H : MY_REACTION_FRAME_H;
+    }
+    public int getPartnerSendFrameW() {
+        return isMe() ? PARTNER_SEND_FRAME_W : MY_SEND_FRAME_W;
+    }
+    public int getPartnerSendFrameH() {
+        return isMe() ? PARTNER_SEND_FRAME_H : MY_SEND_FRAME_H;
+    }
 
     public String getMySprite() {
         return isMe() ? MY_SPRITE : PARTNER_SPRITE;
@@ -89,34 +151,12 @@ public class NetworkClient {
     public String getPartnerSprite() {
         return isMe() ? PARTNER_SPRITE : MY_SPRITE;
     }
-    public String getMyOfflineSheet() {
-        return isMe() ? MY_OFFLINE_SHEET : PARTNER_OFFLINE_SHEET;
-    }
-    public String getMySleepSheet() {
-        return isMe() ? MY_SLEEP_SHEET : PARTNER_SLEEP_SHEET;
-    }
     public String getPartnerOfflineSheet() {
         return isMe() ? PARTNER_OFFLINE_SHEET : MY_OFFLINE_SHEET;
     }
     public String getPartnerSleepSheet() {
         return isMe() ? PARTNER_SLEEP_SHEET : MY_SLEEP_SHEET;
     }
-    public int getMyOfflineFrameW() {
-        return isMe() ? MY_OFFLINE_FRAME_W : PARTNER_OFFLINE_FRAME_W;
-    }
-
-    public int getMyOfflineFrameH() {
-        return isMe() ? MY_OFFLINE_FRAME_H : PARTNER_OFFLINE_FRAME_H;
-    }
-
-    public int getMySleepFrameW() {
-        return isMe() ? MY_SLEEP_FRAME_W : PARTNER_SLEEP_FRAME_W;
-    }
-
-    public int getMySleepFrameH() {
-        return isMe() ? MY_SLEEP_FRAME_H : PARTNER_SLEEP_FRAME_H;
-    }
-
     public int getPartnerOfflineFrameW() {
         return isMe() ? PARTNER_OFFLINE_FRAME_W : MY_OFFLINE_FRAME_W;
     }
@@ -133,7 +173,6 @@ public class NetworkClient {
         return isMe() ? PARTNER_SLEEP_FRAME_H : MY_SLEEP_FRAME_H;
     }
     public String getPartnerUserID() {
-        //TODO When account is created change this to her actual id
         return isMe() ? PARTNER_ID : MY_ID;
     }
     public String getRefreshToken() {
@@ -256,10 +295,8 @@ public class NetworkClient {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "text/event-stream");
                 conn.setDoInput(true);
-
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(conn.getInputStream()));
-
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("data:")) {
@@ -267,25 +304,40 @@ public class NetworkClient {
                         if (!data.equals("null")) {
                             try {
                                 JsonObject wrapper = JsonParser.parseString(data).getAsJsonObject();
-                                JsonObject events = wrapper.getAsJsonObject("data");
-                                if (events == null) return;
+                                String eventPath = wrapper.get("path").getAsString();
+                                JsonElement dataElement = wrapper.get("data");
 
+                                if (dataElement == null || dataElement.isJsonNull()) continue;
 
-                                for (var entry : events.entrySet()) {
-                                    JsonObject event = entry.getValue().getAsJsonObject();
+                                if (eventPath.equals("/")) {
+                                    // initial dump - map of all events
+                                    JsonObject events = dataElement.getAsJsonObject();
+                                    for (var entry : events.entrySet()) {
+                                        JsonObject event = entry.getValue().getAsJsonObject();
+                                        if (event.has("to") &&
+                                                event.get("to").getAsString().equals(userID)) {
+                                            long timestamp = event.get("timestamp").getAsLong();
+                                            if (timestamp > startTime) {
+                                                onEvent.accept(event);
+                                            }
+                                            deleteEvent(entry.getKey());
+                                        }
+                                    }
+                                } else {
+                                    // live update - single event, path is the event ID
+                                    String eventId = eventPath.substring(1);
+                                    JsonObject event = dataElement.getAsJsonObject();
                                     if (event.has("to") &&
                                             event.get("to").getAsString().equals(userID)) {
-
                                         long timestamp = event.get("timestamp").getAsLong();
                                         if (timestamp > startTime) {
                                             onEvent.accept(event);
                                         }
-
-                                        deleteEvent(entry.getKey());
+                                        deleteEvent(eventId);
                                     }
                                 }
                             } catch (Exception e) {
-                                // skip malformed events
+                                System.err.println("Parse error: " + e.getMessage());
                             }
                         }
                     }

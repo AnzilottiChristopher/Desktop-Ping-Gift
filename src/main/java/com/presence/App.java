@@ -45,10 +45,17 @@ public class App extends Application {
         av.setSprite();
         av.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         av.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
+        av.getSprite().setPreserveRatio(true);
+        av.getSprite().setSmooth(false);
 
         pav.setSprite();
         pav.getSprite().fitWidthProperty().bind(stage.widthProperty().multiply(0.5));
         pav.getSprite().fitHeightProperty().bind(stage.heightProperty().multiply(0.5));
+        pav.getSprite().setPreserveRatio(true);
+        pav.getSprite().setSmooth(false);
+
+//        av.getSprite().setStyle("-fx-image-rendering: pixelated;");
+//        pav.getSprite().setStyle("-fx-image-rendering: pixelated;");
 
         if (!pav.getStatus()) {
             pav.playOfflineSequence();
@@ -62,8 +69,10 @@ public class App extends Application {
         Button button = new Button("♥");
         button.getStyleClass().add("ping-button");
         button.setOnAction(event -> {
-            av.setMessage("You Pressed The Button!");
-            av.ping();
+            if (pav.getStatus()) {
+                av.ping();
+            }
+            av.playSendAnimation();
         });
 
         VBox vbox = new VBox(10);

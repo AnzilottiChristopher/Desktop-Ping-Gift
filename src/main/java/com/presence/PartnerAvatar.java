@@ -41,6 +41,8 @@ public class PartnerAvatar {
 
             loadSheet("offline", this.client.getPartnerOfflineSheet());
             loadSheet("sleep", this.client.getPartnerSleepSheet());
+            loadSheet("reaction", this.client.getPartnerReactionSheet());
+            loadSheet("send", this.client.getPartnerSendSheet());
             //TODO load other sprite sheets here
         } catch (Exception e) {
             System.err.println("Error loading sprite: " + e.getMessage());
