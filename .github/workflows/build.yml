@@ -28,20 +28,18 @@ jobs:
             --name Presence `
             --main-jar presence-app-1.0-SNAPSHOT.jar `
             --main-class com.presence.App `
-            --type exe `
+            --type app-image `
             --icon src/main/resources/icons/icon.ico `
             --app-version 1.0.0 `
             --vendor "AnzilottiChristopher" `
             --description "Presence - Stay connected" `
-            --win-shortcut `
-            --win-menu `
             --dest output
 
-      - name: Upload Windows installer
+      - name: Upload Windows app
         uses: actions/upload-artifact@v4
         with:
           name: Presence-Windows
-          path: output/*.exe
+          path: output/Presence
 
   build-mac:
     runs-on: macos-latest
