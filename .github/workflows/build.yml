@@ -33,19 +33,19 @@ jobs:
         run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
 
       - name: Run jpackage for Windows
+        shell: cmd
         run: |
-          jpackage `
-            --input target `
-            --name Presence `
-            --main-jar presence-app-1.0-SNAPSHOT.jar `
-            --main-class com.presence.App `
-            --type app-image `
-            --icon src/main/resources/icons/icon.ico `
-            --app-version 1.0.0 `
-            --vendor "AnzilottiChristopher" `
-            --description "Presence - Stay connected" `
-            --java-options "--module-path `$APPDIR" `
-            --java-options "--add-modules javafx.controls,javafx.fxml" `
+          jpackage ^
+            --input target ^
+            --name Presence ^
+            --main-jar presence-app-1.0-SNAPSHOT.jar ^
+            --main-class com.presence.App ^
+            --type app-image ^
+            --icon src/main/resources/icons/icon.ico ^
+            --app-version 1.0.0 ^
+            --vendor "AnzilottiChristopher" ^
+            --description "Presence - Stay connected" ^
+            --java-options "--module-path $APPDIR --add-modules javafx.controls,javafx.fxml" ^
             --dest output
 
       - name: Upload Windows app
@@ -68,7 +68,7 @@ jobs:
 
       - name: Download JavaFX Mac SDK
         run: |
-          curl -L -o javafx-mac.zip "https://download2.gluonhq.com/openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
+          curl -L -o javafx-mac.zip "https://download2.gluonhq.com.openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
           unzip javafx-mac.zip -d javafx-mac
           echo "JAVAFX_PATH=${{ github.workspace }}/javafx-mac/javafx-sdk-21.0.2/lib" >> $GITHUB_ENV
 
@@ -105,8 +105,7 @@ jobs:
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
             --description "Presence - Stay connected" \
-            --java-options "--module-path \$APPDIR" \
-            --java-options "--add-modules javafx.controls,javafx.fxml" \
+            --java-options "--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" \
             --dest output
 
       - name: Upload Mac installer
