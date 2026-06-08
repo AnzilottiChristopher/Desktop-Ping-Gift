@@ -26,7 +26,7 @@ jobs:
           jpackage `
             --input target `
             --name Presence `
-            --main-jar presence-app-1.0-SNAPSHOT-shaded.jar `
+            --main-jar presence-app-1.0-SNAPSHOT.jar `
             --main-class com.presence.App `
             --type exe `
             --icon src/main/resources/icons/icon.ico `
@@ -78,7 +78,7 @@ jobs:
           jpackage \
             --input target \
             --name Presence \
-            --main-jar presence-app-1.0-SNAPSHOT-shaded.jar \
+            --main-jar presence-app-1.0-SNAPSHOT.jar \
             --main-class com.presence.App \
             --type dmg \
             --icon icon.icns \
