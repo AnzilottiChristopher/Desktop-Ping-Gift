@@ -6,10 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import javafx.application.Platform;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,14 +56,21 @@ public class NetworkClient {
 
     static{
         try {
+            String home = System.getProperty("user.home");
+            String presencePath = home + "/presence/";
+            File presenceDir = new File(presencePath);
+            if(!presenceDir.exists()){
+                presenceDir.mkdir();
+            }
+
             Properties prop = new Properties();
-            prop.load(new FileInputStream("config.properties"));
+            prop.load(new FileInputStream(presencePath + "config.properties"));
             WEB_API_KEY = prop.getProperty("FIREBASE_API_KEY");
             DB_URL = prop.getProperty("FIREBASE_DB_URL");
             MY_ID = prop.getProperty("MY_ID");
             PARTNER_ID = prop.getProperty("PARTNER_ID");
 
-            prop.load(new FileInputStream("sprite.properties"));
+            prop.load(new FileInputStream(presencePath + "sprite.properties"));
 
             MY_SPRITE = prop.getProperty("MY_SPRITE");
             PARTNER_SPRITE = prop.getProperty("PARTNER_SPRITE");
