@@ -24,12 +24,11 @@ jobs:
           Expand-Archive -Path javafx-win.zip -DestinationPath javafx-win
           echo "JAVAFX_PATH=${{ github.workspace }}\javafx-win\javafx-sdk-21.0.2\lib" >> $env:GITHUB_ENV
 
-      - name: Build JAR without shading JavaFX
+      - name: Build JAR
         run: mvn clean package -DskipTests
 
-      - name: Test JAR runs
-        run: java --module-path "$env:JAVAFX_PATH" --add-modules javafx.controls,javafx.fxml -jar target/presence-app-1.0-SNAPSHOT.jar
-        continue-on-error: true
+      - name: Copy JavaFX libs into input
+        run: Copy-Item -Path "$env:JAVAFX_PATH\*" -Destination target -Recurse -Force
 
       - name: Run jpackage for Windows
         run: |
@@ -43,8 +42,7 @@ jobs:
             --app-version 1.0.0 `
             --vendor "AnzilottiChristopher" `
             --description "Presence - Stay connected" `
-            --module-path "$env:JAVAFX_PATH" `
-            --add-modules javafx.controls,javafx.fxml `
+            --java-options "--module-path ${'$'}APPDIR --add-modules javafx.controls,javafx.fxml" `
             --dest output
 
       - name: Upload Windows app
@@ -74,6 +72,9 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests
 
+      - name: Copy JavaFX libs into input
+        run: cp -r "$JAVAFX_PATH/." target/
+
       - name: Convert PNG to ICNS
         run: |
           mkdir -p icon.iconset
@@ -101,8 +102,7 @@ jobs:
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
             --description "Presence - Stay connected" \
-            --module-path "$JAVAFX_PATH" \
-            --add-modules javafx.controls,javafx.fxml \
+            --java-options "--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" \
             --dest output
 
       - name: Upload Mac installer
