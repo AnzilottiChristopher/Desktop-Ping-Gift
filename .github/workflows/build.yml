@@ -1,0 +1,94 @@
+name: Build Presence App
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build fat JAR
+        run: mvn clean package -DskipTests
+
+      - name: Run jpackage for Windows
+        run: |
+          jpackage `
+            --input target `
+            --name Presence `
+            --main-jar presence-app-1.0-SNAPSHOT-shaded.jar `
+            --main-class com.presence.App `
+            --type exe `
+            --icon src/main/resources/icons/icon.ico `
+            --app-version 1.0.0 `
+            --vendor "AnzilottiChristopher" `
+            --description "Presence - Stay connected" `
+            --win-shortcut `
+            --win-menu `
+            --dest output
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Presence-Windows
+          path: output/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build fat JAR
+        run: mvn clean package -DskipTests
+
+      - name: Convert PNG to ICNS
+        run: |
+          mkdir -p icon.iconset
+          sips -z 16 16     src/main/resources/icons/icon_1024.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32     src/main/resources/icons/icon_1024.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32     src/main/resources/icons/icon_1024.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64     src/main/resources/icons/icon_1024.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128   src/main/resources/icons/icon_1024.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256   src/main/resources/icons/icon_1024.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256   src/main/resources/icons/icon_1024.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512   src/main/resources/icons/icon_1024.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512   src/main/resources/icons/icon_1024.png --out icon.iconset/icon_512x512.png
+          sips -z 1024 1024 src/main/resources/icons/icon_1024.png --out icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset
+
+      - name: Run jpackage for Mac
+        run: |
+          jpackage \
+            --input target \
+            --name Presence \
+            --main-jar presence-app-1.0-SNAPSHOT-shaded.jar \
+            --main-class com.presence.App \
+            --type dmg \
+            --icon icon.icns \
+            --app-version 1.0.0 \
+            --vendor "AnzilottiChristopher" \
+            --description "Presence - Stay connected" \
+            --dest output
+
+      - name: Upload Mac installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Presence-Mac
+          path: output/*.dmg
