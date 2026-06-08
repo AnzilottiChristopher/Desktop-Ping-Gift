@@ -18,8 +18,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build fat JAR
-        run: mvn clean package -DskipTests
+      - name: Build fat JAR with Windows JavaFX
+        run: mvn clean package -DskipTests -Pwindows
 
       - name: Run jpackage for Windows
         run: |
@@ -53,8 +53,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build fat JAR
-        run: mvn clean package -DskipTests
+      - name: Build fat JAR with Mac JavaFX
+        run: mvn clean package -DskipTests -Pmac
 
       - name: Convert PNG to ICNS
         run: |
