@@ -109,14 +109,14 @@ jobs:
           sips -z 1024 1024 src/main/resources/icons/icon_1024.png --out icon.iconset/icon_512x512@2x.png
           iconutil -c icns icon.iconset
 
-      - name: Run jpackage for Mac
+      - name: Run jpackage for Mac (app-image)
         run: |
           jpackage \
             --input target \
             --name Presence \
             --main-jar presence-app-1.0-SNAPSHOT.jar \
             --main-class com.presence.App \
-            --type dmg \
+            --type app-image \
             --icon icon.icns \
             --app-version 1.0.0 \
             --vendor "AnzilottiChristopher" \
@@ -125,7 +125,7 @@ jobs:
 
       - name: Fix Presence.cfg for Mac
         run: |
-          CFG_PATH=$(find output -name "Presence.cfg" | head -1)
+          CFG_PATH="output/Presence.app/Contents/app/Presence.cfg"
           echo "[Application]" > "$CFG_PATH"
           echo "app.classpath=\$APPDIR/presence-app-1.0-SNAPSHOT.jar" >> "$CFG_PATH"
           echo "app.mainclass=com.presence.App" >> "$CFG_PATH"
@@ -143,8 +143,17 @@ jobs:
           echo "java-options=-Djpackage.app-version=1.0.0" >> "$CFG_PATH"
           echo "java-options=--module-path \$APPDIR --add-modules javafx.controls,javafx.fxml" >> "$CFG_PATH"
 
+      - name: Package DMG from app image
+        run: |
+          jpackage \
+            --type dmg \
+            --app-image output/Presence.app \
+            --name Presence \
+            --app-version 1.0.0 \
+            --dest dist
+
       - name: Upload Mac installer
         uses: actions/upload-artifact@v4
         with:
           name: Presence-Mac
-          path: output/*.dmg
+          path: dist/*.dmg
