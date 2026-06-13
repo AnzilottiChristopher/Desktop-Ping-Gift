@@ -84,7 +84,7 @@ jobs:
 
       - name: Download JavaFX Mac SDK
         run: |
-          curl -L -o javafx-mac.zip "https://download2.gluonhq.com/openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
+          curl -L -f --retry 5 --retry-all-errors --retry-delay 5 -o javafx-mac.zip "https://download2.gluonhq.com/openjfx/21.0.2/openjfx-21.0.2_osx-aarch64_bin-sdk.zip"
           unzip javafx-mac.zip -d javafx-mac
           echo "JAVAFX_PATH=${{ github.workspace }}/javafx-mac/javafx-sdk-21.0.2/lib" >> $GITHUB_ENV
 
